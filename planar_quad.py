@@ -27,14 +27,15 @@ def ground(s):
 	return s
 
 def update(s):
-	print(s)
-	u[0] += (-0.5+np.random.random())*0.000001
-	u[1] += (-0.5+np.random.random())*0.000000001
+	# print(s)
+	u0 = u[0] + (np.random.normal(0,1))*0.001
+	u1 = u[1] + (np.random.normal(0,1))*0.00000001
+	print(u0, u1)
 	s = ground(s)
-	s[dtheta] += u[1]
+	s[dtheta] += u1
 	s[theta] += s[dtheta]
-	s[vx] += u[0]*np.sin(s[theta])
-	s[vy] += g - u[0]*np.cos(s[theta])
+	s[vx] += u0*np.sin(s[theta])
+	s[vy] += g - u0*np.cos(s[theta])
 	s[x] += s[vx]
 	s[y] += s[vy] 
 	return s
