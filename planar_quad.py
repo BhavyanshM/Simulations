@@ -1,0 +1,60 @@
+import cv2
+import numpy as np
+
+
+
+x, y, theta, vx, vy, dtheta = 0, 1, 2, 3, 4, 5
+s = np.array([400.0, 300.0, 0.0, 0.0, 0.0, 0.0])
+u = np.array([9.8, 0.0])
+g = 9.8
+
+dt = 0.001
+	
+
+height, width = 600, 800
+size = 5
+
+def clear():
+	img = np.ones([height,width,3])
+	img[:,:,0] *= 64/0.128
+	img[:,:,1] *= 128/0.128
+	img[:,:,2] *= 0/0.128
+	return img
+
+def ground(s):
+	if s[y] > height-size:
+		s[vy] *= -1
+	return s
+
+def update(s):
+	print(s)
+	u[0] += (-0.5+np.random.random())*0.000001
+	u[1] += (-0.5+np.random.random())*0.000000001
+	s = ground(s)
+	s[dtheta] += u[1]
+	s[theta] += s[dtheta]
+	s[vx] += u[0]*np.sin(s[theta])
+	s[vy] += g - u[0]*np.cos(s[theta])
+	s[x] += s[vx]
+	s[y] += s[vy] 
+	return s
+	
+def display(s, img):
+	dlx = int(20*np.cos(s[theta]))
+	dly = int(20*np.sin(s[theta]))
+	cv2.circle(img, (int(s[x]), int(s[y])), size, (0, 0, 0), -1)
+	cv2.line(img, (int(s[x]-dlx), int(s[y]-dly)), (int(s[x]+dlx), int(s[y]+dly)), 0, 2)
+	return img
+
+while True:
+	img = clear()
+
+	s = update(s)
+
+	img = display(s, img)
+
+	cv2.imshow("Simulation", img)
+
+	code = cv2.waitKeyEx(30)
+	if code == ord('q'):
+		break
