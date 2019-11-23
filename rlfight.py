@@ -17,6 +17,9 @@ class Quad():
 		self.reward = 0
 		self.passed = [0,0,0,0]
 
+	def update(self):
+		self.velocity += self.accel
+		self.position += self.velocity
 
 class Track2D():
 	def __init__(self, delay=0.05, time_scale=15):
@@ -51,6 +54,21 @@ class Track2D():
 					return 100
 		return -1
 
+	def display(self):
+		img = self.clear()
+		pos = self.quad.position
+		cv2.circle(img, (int(pos[0]), int(pos[1])), self.quad.radius, self.quad.color, self.quad.thickness)
+		for g in range(len(self.gates)):
+			color = (255,255,255)
+			if self.quad.passed[g] == 1:
+				color = (0,128,255)
+			cv2.line(img, (self.gates[g][0] - 20, self.gates[g][1]), (self.gates[g][0] + 20, self.gates[g][1]), color, 4)
+			# cv2.line(img, (0, self.gates[g][1]), (1000, self.gates[g][1]), (0,0,0), 2)
+		cv2.imshow("Gray", img)
+		return cv2.waitKeyEx(self.delay)
+
+	def act(self, action):
+		self.quad.accel
 
 	def loop(self):
 		i = 0
@@ -58,28 +76,14 @@ class Track2D():
 			i += 1
 			t = i*self.time_scale
 
-			img = self.clear()
-
-			self.quad.velocity += self.quad.accel
-			self.quad.position += self.quad.velocity
-			pos = self.quad.position
-			cv2.circle(img, (int(pos[0]), int(pos[1])), self.quad.radius, self.quad.color, self.quad.thickness)
-
-			for g in range(len(self.gates)):
-				color = (255,255,255)
-				if self.quad.passed[g] == 1:
-					color = (0,128,255)
-				cv2.line(img, (self.gates[g][0] - 20, self.gates[g][1]), (self.gates[g][0] + 20, self.gates[g][1]), color, 4)
-				# cv2.line(img, (0, self.gates[g][1]), (1000, self.gates[g][1]), (0,0,0), 2)
-
-			cv2.imshow("Gray", img)
-			code = cv2.waitKeyEx(self.delay)
+			self.quad.update()
 			
 			self.quad.reward += self.evaluate()
-			print(self.quad.reward)
+
 			if self.terminate():
 				self.quad.reset()
 
+			code = self.display()
 			# print(code)
 			if code == ord('q'):
 				cv2.destroyAllWindows()
@@ -87,10 +91,5 @@ class Track2D():
 
 
 
-vel = np.array([0,0])
-pos = np.array([500,500])
-
 track = Track2D(0.02,10)
 track.loop()
-
-cv2.destroyAllWindows()
